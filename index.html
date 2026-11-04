@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OS Exam Prep</title>
+  <meta name="description" content="Подготовка к экзамену по Operating Systems: все темы курса, визуализации, тренировка и режим экзамена.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233d5afe'/%3E%3Ctext x='16' y='21' font-family='monospace' font-size='13' font-weight='700' text-anchor='middle' fill='white'%3EOS%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="m-fill"/></marker>
+      <marker id="arr-start" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="m-fill"/></marker>
+      <marker id="arr-acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="m-acc"/></marker>
+      <marker id="arr-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="m-ok"/></marker>
+      <marker id="arr-warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="m-warn"/></marker>
+      <marker id="arr-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="m-bad"/></marker>
+    </defs>
+  </svg>
+
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="brand" href="#/"><span class="brand-mark">OS</span><span class="brand-text">Exam Prep</span></a>
+      <nav class="nav">
+        <a href="#/" data-nav="home">Темы</a>
+        <a href="#/exam" data-nav="exam">Экзамен</a>
+        <a href="#/mistakes" data-nav="mistakes">Ошибки</a>
+        <a href="#/history" data-nav="history">История</a>
+      </nav>
+      <div class="top-actions">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="searchInput" type="search" placeholder="Поиск  /" aria-label="Поиск">
+        </div>
+        <button class="icon-btn" id="themeBtn" type="button" title="Сменить тему" aria-label="Сменить тему">
+          <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app"></main>
+
+  <!-- engine -->
+  <script src="js/core.js"></script>
+  <script src="js/viz/basic.js"></script>
+  <script src="js/viz/sched.js"></script>
+  <script src="js/viz/procs.js"></script>
+  <script src="js/viz/sync.js"></script>
+  <script src="js/viz/storage.js"></script>
+  <!-- content -->
+  <script src="content/01-basics.js"></script>
+  <script src="content/02-services.js"></script>
+  <script src="content/03-processes.js"></script>
+  <script src="content/04-threads.js"></script>
+  <script src="content/05-scheduling.js"></script>
+  <script src="content/06-sync.js"></script>
+  <script src="content/07-deadlock.js"></script>
+  <script src="content/08-io.js"></script>
+  <script src="content/09-storage.js"></script>
+  <script src="content/10-linux.js"></script>
+  <script src="content/11-linux-proc.js"></script>
+  <script src="content/12-bash.js"></script>
+  <script src="content/13-devices.js"></script>
+  <!-- views -->
+  <script src="js/learn.js"></script>
+  <script src="js/exam.js"></script>
+</body>
+</html>
