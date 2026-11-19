@@ -107,15 +107,15 @@
 
     const ctr = h('div', { class: 'viz-controls' });
     const qInput = h('input', { type: 'number', min: 1, value: quantum });
-    const qLabel = h('label', {}, 'Квант q', qInput);
+    const qLabel = h('label', {}, 'Quantum q', qInput);
     qInput.addEventListener('input', () => { quantum = Math.max(1, +qInput.value || 1); compute(); });
     if (!p.lockAlgo) ctr.append(OS.seg(ALGOS, algo, v => { algo = v; drawTable(); compute(); }));
     else ctr.append(h('span', { class: 'tag acc', text: (ALGOS.find(a => a[0] === algo) || [0, algo])[1] }));
     ctr.append(qLabel);
 
     const tblWrap = h('div', { class: 'tbl-wrap' });
-    const addBtn = h('button', { class: 'btn sm', type: 'button', text: '+ процесс' });
-    const resetBtn = h('button', { class: 'btn sm ghost', type: 'button', text: 'Сбросить пример' });
+    const addBtn = h('button', { class: 'btn sm', type: 'button', text: '+ process' });
+    const resetBtn = h('button', { class: 'btn sm ghost', type: 'button', text: 'Reset example' });
     addBtn.onclick = () => {
       if (procs.length >= 8) return;
       procs.push({ name: 'P' + (procs.length + 1), arrival: 0, burst: 3, priority: 1 });
@@ -138,7 +138,7 @@
           x.addEventListener('input', () => { pc[k] = k === 'name' ? x.value : +x.value; compute(); });
           return h('td', {}, x);
         };
-        const del = h('button', { class: 'btn sm ghost', type: 'button', text: '×', title: 'Удалить' });
+        const del = h('button', { class: 'btn sm ghost', type: 'button', text: '×', title: 'Remove' });
         del.onclick = () => { if (procs.length > 1) { procs.splice(i, 1); drawTable(); compute(); } };
         t.append(h('tr', {}, inp('name', 'name'), inp('arrival'), inp('burst'), pr ? inp('priority') : null, h('td', {}, del)));
       });
@@ -178,7 +178,7 @@
     const qOf = a => { const m = /q\s*=\s*(\d+)/i.exec(a || ''); return m ? +m[1] : Infinity; };
     const input = h('input', { type: 'range', min: 1, max: 60, value: burst });
     const val = h('b', { class: 'mono', text: burst + ' ms' });
-    const ctr = h('div', { class: 'viz-controls' }, h('label', {}, 'CPU burst процесса', input, val));
+    const ctr = h('div', { class: 'viz-controls' }, h('label', {}, 'CPU burst of the process', input, val));
     const out = h('div');
     const sum = h('div', { class: 'viz-result' });
     el.append(ctr, out, sum);
@@ -189,14 +189,14 @@
       const rows = queues.map((q, i) => {
         const used = rem > 0 ? Math.min(qOf(q.algo), rem) : 0;
         const segs = used ? [{ from: t, to: t + used, label: used + ' ms', tone: ['acc', 'warn', 'bad', 'c4', 'c5'][i % 5] }] : [];
-        if (used) parts.push(`${used} ms в ${q.label}`);
+        if (used) parts.push(`${used} ms in ${q.label}`);
         t += used; rem -= used;
         return { label: `${q.label} <span class="muted small">${q.algo}</span>`, segs };
       });
       out.innerHTML = '';
       OS.renderTimeline(out, { max: Math.max(t, 1), rows });
       const lastIdx = rows.reduce((a, r, i) => (r.segs.length ? i : a), 0);
-      sum.innerHTML = parts.join(' → ') + `. Процесс завершается в <b>${queues[lastIdx].label}</b>` + (lastIdx > 0 ? `, понижен ${lastIdx} ${OS.plural(lastIdx, 'раз', 'раза', 'раз')}.` : ' — понижения не было.');
+      sum.innerHTML = parts.join(' → ') + `. The process finishes in <b>${queues[lastIdx].label}</b>` + (lastIdx > 0 ? `, after being demoted ${lastIdx} time${lastIdx > 1 ? 's' : ''}.` : ' — it was never demoted.');
     }
     draw();
   };

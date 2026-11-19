@@ -50,9 +50,9 @@
     const qIn = h('input', { type: 'text', value: queue.join(', '), style: { width: '240px' } });
     const hIn = h('input', { type: 'number', min: 0, value: head });
     const mIn = h('input', { type: 'number', min: 1, value: max });
-    const dirSeg = OS.seg([['down', '← к 0'], ['up', 'к max →']], dir, v => { dir = v; draw(); });
+    const dirSeg = OS.seg([['down', '← toward 0'], ['up', 'toward max →']], dir, v => { dir = v; draw(); });
     const ctr1 = h('div', { class: 'viz-controls' }, OS.seg(DALGOS.map(a => [a, a]), algo, v => { algo = v; draw(); }));
-    const ctr2 = h('div', { class: 'viz-controls' }, h('label', {}, 'Queue', qIn), h('label', {}, 'Head', hIn), h('label', {}, 'Max', mIn), h('label', {}, 'Направление', dirSeg));
+    const ctr2 = h('div', { class: 'viz-controls' }, h('label', {}, 'Queue', qIn), h('label', {}, 'Head', hIn), h('label', {}, 'Max', mIn), h('label', {}, 'Direction', dirSeg));
     const chart = h('div'), info = h('div'), cmpBox = h('div', { class: 'tbl-wrap', style: { marginTop: '10px' } });
     el.append(ctr1, ctr2, chart, info, cmpBox);
     const parse = () => {
@@ -88,9 +88,9 @@
       for (let i = 1; i < r.path.length; i++) moves.push(Math.abs(r.path[i] - r.path[i - 1]));
       info.innerHTML = '';
       info.append(h('div', { class: 'chips', style: { margin: '8px 0' } }, ...r.path.map((c, i) => h('span', { class: 'chip ' + (i === 0 ? 'tone-warn' : r.jumps.includes(i - 1) ? 'tone-muted' : ''), text: (r.jumps.includes(i - 1) ? '↷ ' : '') + c }))));
-      info.append(h('div', { class: 'formula', html: `Total head movement = ${moves.join(' + ')} = <b>${r.total}</b>` + (r.jumps.length && r.total !== r.noJump ? ` &nbsp;(без обратного хода: <b>${r.noJump}</b>)` : '') }));
+      info.append(h('div', { class: 'formula', html: `Total head movement = ${moves.join(' + ')} = <b>${r.total}</b>` + (r.jumps.length && r.total !== r.noJump ? ` &nbsp;(without the return jump: <b>${r.noJump}</b>)` : '') }));
       const t = h('table', { class: 'vt' });
-      t.append(h('tr', {}, h('th', { class: 'l', text: 'Алгоритм' }), ...DALGOS.map(a => h('th', { text: a }))));
+      t.append(h('tr', {}, h('th', { class: 'l', text: 'Algorithm' }), ...DALGOS.map(a => h('th', { text: a }))));
       t.append(h('tr', {}, h('td', { class: 'l', text: 'Total' }), ...DALGOS.map(a => { const x = OS.diskPath(queue, head, max, a, dir); return h('td', { html: (a === algo ? '<b>' : '') + x.total + (x.jumps.length && x.total !== x.noJump ? ` <span class="muted">(${x.noJump})</span>` : '') + (a === algo ? '</b>' : '') }); })));
       cmpBox.innerHTML = ''; cmpBox.append(t);
     }
@@ -100,7 +100,7 @@
   /* ---------- HDD access time ---------- */
   OS.viz.hddCalc = function (el, p) {
     const v = { rpm: p.rpm || 7200, seek: p.seek != null ? p.seek : 5, rateGbps: p.rateGbps || 1, kb: p.kb || 4, overheadMs: p.overheadMs != null ? p.overheadMs : 0.1 };
-    const fields = [['rpm', 'RPM'], ['seek', 'Avg seek, ms'], ['rateGbps', 'Transfer, Gb/s'], ['kb', 'Блок, KB'], ['overheadMs', 'Controller overhead, ms']];
+    const fields = [['rpm', 'RPM'], ['seek', 'Avg seek, ms'], ['rateGbps', 'Transfer, Gb/s'], ['kb', 'Block, KB'], ['overheadMs', 'Controller overhead, ms']];
     const ctr = h('div', { class: 'viz-controls' });
     fields.forEach(([k, label]) => {
       const inp = h('input', { type: 'number', min: 0, step: 'any', value: v[k] });
@@ -129,13 +129,13 @@
   OS.viz.raid = function (el, p) {
     const LV = [['0', 'RAID 0'], ['1', 'RAID 1'], ['4', 'RAID 4'], ['5', 'RAID 5'], ['6', 'RAID 6'], ['01', 'RAID 0+1'], ['10', 'RAID 1+0']];
     const INFO = {
-      0: ['Striping без избыточности', 'min 2 диска', 'ёмкость 100%', 'отказов: 0', 'Максимальная производительность, но потеря любого диска = потеря данных.'],
-      1: ['Mirroring (зеркалирование)', 'min 2 диска', 'ёмкость 50%', 'переживает отказ диска пары', 'Надёжно и быстрое чтение, но дорого: вдвое больше дисков.'],
-      4: ['Block-interleaved parity', 'min 3 диска', 'ёмкость (n−1)/n', 'отказов: 1', 'Отдельный parity-диск — узкое место при записи (каждая запись обновляет его).'],
-      5: ['Block-interleaved distributed parity', 'min 3 диска', 'ёмкость (n−1)/n', 'отказов: 1', 'Parity распределена по всем дискам → нет узкого места. Самый распространённый уровень с чётностью.'],
-      6: ['P + Q redundancy', 'min 4 диска', 'ёмкость (n−2)/n', 'отказов: 2', 'Две независимые контрольные суммы (P — XOR, Q — error-correcting code).'],
-      '01': ['Stripe, затем mirror', 'min 4 диска', 'ёмкость 50%', 'отказ одного диска выводит из строя всю stripe-половину', 'Производительность RAID 0 + надёжность RAID 1.'],
-      '10': ['Mirror, затем stripe', 'min 4 диска', 'ёмкость 50%', 'переживает отказ по одному диску в каждой паре', 'Надёжнее 0+1: отказ диска затрагивает только его пару.']
+      0: ['Striping without redundancy', 'min 2 disks', 'capacity 100%', 'tolerates 0 failures', 'Maximum performance, but losing any disk loses data.'],
+      1: ['Mirroring', 'min 2 disks', 'capacity 50%', 'survives the failure of one disk of the pair', 'Reliable and fast reads, but expensive: twice the disks.'],
+      4: ['Block-interleaved parity', 'min 3 disks', 'capacity (n−1)/n', 'tolerates 1 failure', 'A dedicated parity disk is a bottleneck for writes (every write updates it).'],
+      5: ['Block-interleaved distributed parity', 'min 3 disks', 'capacity (n−1)/n', 'tolerates 1 failure', 'Parity is spread over all disks → no bottleneck. The most common parity level.'],
+      6: ['P + Q redundancy', 'min 4 disks', 'capacity (n−2)/n', 'tolerates 2 failures', 'Two independent checks (P = XOR parity, Q = error-correcting code).'],
+      '01': ['Stripe first, then mirror', 'min 4 disks', 'capacity 50%', 'one disk failure takes down its whole stripe set', 'Performance of RAID 0 + reliability of RAID 1.'],
+      '10': ['Mirror first, then stripe', 'min 4 disks', 'capacity 50%', 'survives one failure in each mirrored pair', 'More robust than 0+1: a failure affects only its own pair.']
     };
     let level = String(p.level != null ? p.level : 5).replace('+', '');
     if (level === '0' && String(p.level) === '0+1') level = '01';
@@ -177,7 +177,7 @@
     el.append(demo);
     function drawDemo() {
       demo.innerHTML = '';
-      demo.append(h('div', { class: 'small', style: { fontWeight: 600, marginBottom: '8px' }, html: 'Parity = XOR данных. Кликай биты, «сломай» диск — он восстанавливается XOR-ом остальных.' }));
+      demo.append(h('div', { class: 'small', style: { fontWeight: 600, marginBottom: '8px' }, html: 'Parity = XOR of the data. Click bits, then "break" a disk — it is rebuilt by XOR-ing the others.' }));
       const parity = [0, 1, 2, 3].map(k => bits.reduce((x, d) => x ^ d[k], 0));
       const grid = h('div', { style: { display: 'grid', gridTemplateColumns: 'auto auto auto', gap: '8px 12px', alignItems: 'center', justifyContent: 'start' } });
       bits.forEach((d, i) => {
@@ -188,13 +188,13 @@
           else e.onclick = () => { d[k] ^= 1; drawDemo(); };
           return e;
         }));
-        const fb = h('button', { class: 'btn sm ' + (failed === i ? 'danger' : 'ghost'), type: 'button', text: failed === i ? 'восстановлен ✓' : 'сломать' });
+        const fb = h('button', { class: 'btn sm ' + (failed === i ? 'danger' : 'ghost'), type: 'button', text: failed === i ? 'rebuilt ✓' : 'break' });
         fb.onclick = () => { failed = failed === i ? -1 : i; drawDemo(); };
         grid.append(h('span', { class: 'mono small', text: 'Disk ' + i }), row, fb);
       });
       grid.append(h('span', { class: 'mono small', text: 'Parity' }), h('div', { class: 'bits' }, ...parity.map(b => h('span', { class: 'bit par', text: b }))), h('span'));
       demo.append(grid);
-      if (failed >= 0) demo.append(h('div', { class: 'viz-result ok', html: `Disk ${failed} = XOR(остальные диски, parity) — данные восстановлены без потерь.` }));
+      if (failed >= 0) demo.append(h('div', { class: 'viz-result ok', html: `Disk ${failed} = XOR(other disks, parity) — the data is recovered with no loss.` }));
     }
     drawDemo();
   };
@@ -211,7 +211,7 @@
     function draw(fromInput) {
       if (!fromInput) oct.value = m.join('');
       box.innerHTML = '';
-      const g = h('div', { class: 'perm-grid' }, h('span'), ...letters.map((l, i) => h('span', { class: 'h', text: `${l} (${bitsN[i]})` })), h('span', { class: 'h', text: 'сумма' }));
+      const g = h('div', { class: 'perm-grid' }, h('span'), ...letters.map((l, i) => h('span', { class: 'h', text: `${l} (${bitsN[i]})` })), h('span', { class: 'h', text: 'sum' }));
       who.forEach((w, i) => {
         g.append(h('span', { class: 'small', text: w }));
         bitsN.forEach((b, k) => {
@@ -234,15 +234,15 @@
   /* ---------- I/O modes ---------- */
   OS.viz.ioModes = function (el) {
     const modes = [
-      ['Programmed I/O (polling)', 'CPU сам опрашивает регистр статуса в цикле (busy waiting) и сам копирует каждое слово. CPU занят всё время операции.', [
-        { label: 'CPU', segs: [{ from: 0, to: 1, label: 'cmd', tone: 'acc' }, { from: 1, to: 17, label: 'busy waiting: опрос статуса', tone: 'bad' }, { from: 17, to: 20, label: 'copy', tone: 'acc' }] },
-        { label: 'Device', segs: [{ from: 1, to: 17, label: 'операция', tone: 'muted' }] }]],
-      ['Interrupt-driven I/O', 'CPU выдаёт команду и выполняет другие процессы; устройство сигналит прерыванием по готовности — CPU запускает ISR и переносит данные (на каждое слово/блок).', [
-        { label: 'CPU', segs: [{ from: 0, to: 1, label: 'cmd', tone: 'acc' }, { from: 1, to: 6, label: 'другой процесс', tone: 'ok' }, { from: 6, to: 7, label: 'ISR', tone: 'warn' }, { from: 7, to: 12, label: 'другой процесс', tone: 'ok' }, { from: 12, to: 13, label: 'ISR', tone: 'warn' }, { from: 13, to: 18, label: 'другой процесс', tone: 'ok' }, { from: 18, to: 19, label: 'ISR', tone: 'warn' }, { from: 19, to: 20, label: '', tone: 'ok' }] },
-        { label: 'Device', segs: [{ from: 1, to: 6, label: 'слово 1', tone: 'muted' }, { from: 7, to: 12, label: 'слово 2', tone: 'muted' }, { from: 13, to: 18, label: 'слово 3', tone: 'muted' }] }]],
-      ['DMA', 'CPU только программирует DMA-контроллер (адрес, счётчик, направление). Контроллер сам переносит весь блок между устройством и памятью (cycle stealing на шине) и даёт одно прерывание в конце.', [
-        { label: 'CPU', segs: [{ from: 0, to: 1, label: 'setup', tone: 'acc' }, { from: 1, to: 19, label: 'другие процессы', tone: 'ok' }, { from: 19, to: 20, label: 'ISR', tone: 'warn' }] },
-        { label: 'DMA', segs: [{ from: 1, to: 19, label: 'перенос всего блока в память', tone: 'c4' }] }]]
+      ['Programmed I/O (polling)', 'The CPU polls the status register in a loop (busy waiting) and copies every word itself. The CPU is busy for the whole operation.', [
+        { label: 'CPU', segs: [{ from: 0, to: 1, label: 'cmd', tone: 'acc' }, { from: 1, to: 17, label: 'busy waiting: polling the status', tone: 'bad' }, { from: 17, to: 20, label: 'copy', tone: 'acc' }] },
+        { label: 'Device', segs: [{ from: 1, to: 17, label: 'operation', tone: 'muted' }] }]],
+      ['Interrupt-driven I/O', 'The CPU issues the command and runs other processes; the device raises an interrupt when ready, and the CPU runs the ISR to move the data (once per word/block).', [
+        { label: 'CPU', segs: [{ from: 0, to: 1, label: 'cmd', tone: 'acc' }, { from: 1, to: 6, label: 'other process', tone: 'ok' }, { from: 6, to: 7, label: 'ISR', tone: 'warn' }, { from: 7, to: 12, label: 'other process', tone: 'ok' }, { from: 12, to: 13, label: 'ISR', tone: 'warn' }, { from: 13, to: 18, label: 'other process', tone: 'ok' }, { from: 18, to: 19, label: 'ISR', tone: 'warn' }, { from: 19, to: 20, label: '', tone: 'ok' }] },
+        { label: 'Device', segs: [{ from: 1, to: 6, label: 'word 1', tone: 'muted' }, { from: 7, to: 12, label: 'word 2', tone: 'muted' }, { from: 13, to: 18, label: 'word 3', tone: 'muted' }] }]],
+      ['DMA', 'The CPU only programs the DMA controller (address, count, direction). The controller moves the whole block between device and memory by itself (cycle stealing on the bus) and raises one interrupt at the end.', [
+        { label: 'CPU', segs: [{ from: 0, to: 1, label: 'setup', tone: 'acc' }, { from: 1, to: 19, label: 'other processes', tone: 'ok' }, { from: 19, to: 20, label: 'ISR', tone: 'warn' }] },
+        { label: 'DMA', segs: [{ from: 1, to: 19, label: 'moves the whole block to memory', tone: 'c4' }] }]]
     ];
     modes.forEach(([title, desc, rows], i) => {
       const box = h('div', { style: { marginBottom: i < 2 ? '18px' : 0 } });
@@ -250,6 +250,6 @@
       OS.renderTimeline(box, { max: 20, ticks: [0, 20], rows });
       el.append(box);
     });
-    el.append(h('div', { class: 'legend' }, h('span', {}, h('i', { class: 'tone-ok' }), 'полезная работа CPU'), h('span', {}, h('i', { class: 'tone-bad' }), 'CPU впустую ждёт'), h('span', {}, h('i', { class: 'tone-warn' }), 'обработчик прерывания')));
+    el.append(h('div', { class: 'legend' }, h('span', {}, h('i', { class: 'tone-ok' }), 'useful CPU work'), h('span', {}, h('i', { class: 'tone-bad' }), 'CPU wastes time waiting'), h('span', {}, h('i', { class: 'tone-warn' }), 'interrupt handler')));
   };
 })();

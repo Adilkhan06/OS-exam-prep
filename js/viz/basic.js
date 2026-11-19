@@ -16,7 +16,7 @@
       box.append(st);
     });
     el.append(box);
-    if (p.loop) el.append(h('div', { class: 'flow-loop', text: '↺ цикл повторяется — от последнего шага снова к первому' }));
+    if (p.loop) el.append(h('div', { class: 'flow-loop', text: '↺ the cycle repeats — from the last step back to the first' }));
   };
 
   /* ---------- layers ---------- */
@@ -216,14 +216,14 @@
     const out = h('div', { class: 'console' });
     const hasOut = steps.some(s => s.out != null);
     const hasVars = steps.some(s => s.vars);
-    const bPrev = h('button', { class: 'btn sm', type: 'button', title: 'Назад', html: '◀' });
-    const bNext = h('button', { class: 'btn sm primary', type: 'button', html: 'Шаг ▶' });
-    const bFirst = h('button', { class: 'btn sm', type: 'button', title: 'В начало', html: '⏮' });
-    const bPlay = h('button', { class: 'btn sm', type: 'button', html: 'Авто' });
+    const bPrev = h('button', { class: 'btn sm', type: 'button', title: 'Back', html: '◀' });
+    const bNext = h('button', { class: 'btn sm primary', type: 'button', html: 'Step ▶' });
+    const bFirst = h('button', { class: 'btn sm', type: 'button', title: 'Restart', html: '⏮' });
+    const bPlay = h('button', { class: 'btn sm', type: 'button', html: 'Auto' });
     const ctr = h('div', { class: 'viz-controls' }, bFirst, bPrev, bNext, bPlay, count);
     const panel = h('div', { class: 'step-panel' }, note);
     if (hasVars) panel.append(vars);
-    if (hasOut) panel.append(h('div', { class: 'small muted', text: 'Вывод:' }), out);
+    if (hasOut) panel.append(h('div', { class: 'small muted', text: 'Output:' }), out);
     el.append(ctr, h('div', { class: 'stepper' }, codeBox, panel));
 
     function stateAt(i) {
@@ -238,7 +238,7 @@
       const first = lineEls[(ls[0] || 1) - 1];
       if (first && codeBox.scrollHeight > codeBox.clientHeight) first.scrollIntoView({ block: 'nearest' });
       note.innerHTML = s.note || '';
-      count.textContent = `шаг ${cur + 1} / ${steps.length}`;
+      count.textContent = `step ${cur + 1} / ${steps.length}`;
       const now = stateAt(cur), prev = cur ? stateAt(cur - 1) : {};
       vars.innerHTML = '';
       Object.keys(now).forEach(k => {
@@ -253,11 +253,11 @@
     bNext.onclick = () => { if (cur < steps.length - 1) { cur++; render(); } };
     bPrev.onclick = () => { if (cur > 0) { cur--; render(); } };
     bFirst.onclick = () => { cur = 0; stop(); render(); };
-    function stop() { clearInterval(timer); timer = null; bPlay.textContent = 'Авто'; }
+    function stop() { clearInterval(timer); timer = null; bPlay.textContent = 'Auto'; }
     bPlay.onclick = () => {
       if (timer) return stop();
       if (cur >= steps.length - 1) cur = 0;
-      bPlay.textContent = 'Пауза';
+      bPlay.textContent = 'Pause';
       render();
       timer = setInterval(() => { if (cur >= steps.length - 1) return stop(); cur++; render(); }, 1300);
     };

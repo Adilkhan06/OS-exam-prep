@@ -1,117 +1,117 @@
-# Content guide — OS Exam Prep
+# Content guide v2 — OS Exam Prep (English, teaching-first)
 
-Платформа — статический сайт без сборки. Каждый модуль — файл `content/NN-<id>.js`, который вызывает `OS.addModule({...})`.
-Эталон стиля и плотности: `content/05-scheduling.js`. **Перед написанием модуля прочитай эталон целиком.**
+The site is a static app. Each module is `content/NN-<id>.js` calling `OS.addModule({...})`.
+Reference for style, density and structure: **`content/05-scheduling.js` — read it fully before writing.**
 
-## Язык и стиль
-- Объяснения **на русском**, все термины, названия алгоритмов, системных вызовов, команд — **на английском, как на слайдах**: `<b>Process Control Block (PCB)</b> — структура ядра, …`.
-- **Без воды.** Только то, что есть на слайдах (и что нужно для их понимания). Никаких вступлений «В этом разделе мы рассмотрим…», никаких выводов «Таким образом…». Буллеты, таблицы, короткие определения.
-- Каждый содержательный слайд должен быть отражён. Повторяющиеся слайды (одинаковый текст на нескольких страницах) — один раз. Слайды-картинки (диаграммы/таблицы) — рендерить и смотреть, затем переносить смысл в таблицу или визуализацию.
-- Где на слайде пример с числами/кодом — переносим пример (он часто бывает на экзамене).
-- Шпаргалку `OS_and_Virtualization_Cheatsheet (3).pdf` можно использовать как вспомогательный источник **только для тем, которые есть на слайдах**. Темы, которых нет на слайдах (Main Memory, Virtual Memory, File systems, Security, Virtualization part 2), **не добавлять**.
+## Why v2
+Student feedback on v1: *"I read the explanations and don't understand the point. It's just facts, like in the
+professor's slides. There must be a logical chain between topics and explanations. Mixing Russian and English is awkward."*
 
-## Схема модуля
+So v2 is:
+1. **Fully in English** (UI, content, questions). The site has a click-a-word translation mode (EN→RU), so write
+   clear, simple English — do **not** add Russian anywhere except `terms[].ru` and `titleRu`.
+2. **Teaching, not listing.** Every section explains *why the thing exists, how it works, and what follows from it*.
+3. **A logical chain.** Each module opens with the big picture and how it follows from the previous module; each
+   section starts from what the reader already knows and ends by pointing to the next problem.
+
+## Writing rules
+- Write like a good tutor explaining to a classmate who missed the lecture. Plain English (B1–B2): short sentences,
+  common words, no idioms, no filler ("In this section we will…", "It is important to note that…" are banned).
+- **Problem → idea → mechanism → consequences.** For every concept answer, in this order:
+  1. What problem does it solve? (or what question does it answer)
+  2. What is the core idea, in one or two sentences? (an analogy is welcome if it is short and accurate)
+  3. How does it work, step by step?
+  4. What are the trade-offs / what goes wrong / where is it used?
+- **Define every term at first use** in plain words: `<b>Dispatch latency</b> is the time the dispatcher needs to stop one process and start another.`
+- **Never drop a bare table or list.** Before it, say what to look at; after it, state the conclusion (the pattern).
+- **Keep every fact from the slides** (completeness matters for the exam): definitions, lists, numbers, examples,
+  code. v1 modules already contain all slide facts — keep them, but explain them. Do not invent new topics.
+- Connect: the `lead` of a section links to the previous section; the end of the section (or `takeaway`) hints at the
+  next problem. Use phrases like "This raises a question…", "The fix is…", "That is exactly what X does."
+- Short paragraphs (2–4 sentences). Bullets for real enumerations only. Bold only key terms.
+
+### Before / after (what v1 did wrong)
+v1 (bad — a table with no meaning):
+> **Characteristics of Various Types of Storage:** [table: registers, cache, main memory, SSD, disk × size, access time, bandwidth, managed by]
+
+v2 (good):
+> **Lead:** The CPU wants data instantly, but fast memory is tiny and expensive. How do we get both speed and size?
+>
+> The trick is **caching**: keep a *copy* of the data you are using right now in a small fast memory, and leave the
+> rest in a big slow one. When the CPU needs something it first checks the fast copy (a **cache hit** — fast); if it is
+> not there (a **miss**) the data is copied up from the slower level and then used.
+>
+> The table shows why we need several levels. Read it top to bottom: every level is **bigger** but **slower** than the
+> one above — registers answer in ~0.3 ns, a disk in ~5,000,000 ns. Notice the "Managed by" row: the compiler decides
+> what goes into registers, the hardware moves data into cache automatically, and the OS moves data between memory
+> and disk. [table]
+>
+> **Takeaway:** Each level acts as a cache for the level below it. Because the cache is smaller than what it caches,
+> someone must choose what to keep — this is **cache management** (cache size + replacement policy).
+
+## Module schema
 ```js
 OS.addModule({
-  id: 'scheduling',            // латиница, kebab-case, уникальный
-  num: 5,                      // порядковый номер (см. таблицу модулей)
-  group: 'theory',             // 'theory' (лекции) | 'lab' (ES*)
-  title: 'CPU Scheduling',     // EN название
-  titleRu: 'Планирование ЦП',  // RU название
-  icon: '⏱',                   // один эмодзи
+  id: 'scheduling',            // kebab-case, unique (keep the v1 id!)
+  num: 5,
+  group: 'theory',             // 'theory' | 'lab'
+  title: 'CPU Scheduling',
+  titleRu: 'Планирование процессора',   // only used by the translator
+  icon: '⏱',
   sources: ['5-Scheduling.pdf'],
-  summary: 'Одна строка: о чём модуль.',
+  summary: 'One line: what the module covers.',
+  bridge: 'One or two sentences: how this module follows from the previous one (e.g. "Processes can be ready at the same time, but one core runs one at a time — so who goes next?").',
+  intro: `HTML, 1–2 short paragraphs: the big picture — the problem this whole topic solves and the mental model to keep in mind.`,
   sections: [
     {
-      id: 'criteria',          // уникален внутри модуля, kebab-case
-      h: 'Scheduling Criteria — критерии',
-      html: `...`,             // контент (см. «HTML-разметка»)
-      viz: [ { name: 'scheduler', props: { ... }, caption: '...' } ],   // опционально, рендерится ПОСЛЕ html
-      exam: 'Что спрашивают: …' // опционально — короткая подсказка «🎯 На экзамене»
+      id: 'criteria',           // kebab-case, unique in module (keep v1 ids where the topic is the same)
+      h: 'Scheduling criteria',   // short English title
+      why: 'how to compare algorithms',   // 2–6 words: the purpose of this step (shown in the module roadmap)
+      lead: 'Before comparing algorithms we need a way to say which one is "better".',  // 1–3 sentences, plain text or light HTML
+      html: `...`,              // the explanation (see HTML conventions)
+      viz: [ { name: 'scheduler', props: { ... }, caption: '...' } ],   // optional, rendered after html
+      takeaway: 'One or two sentences: what to remember.',            // required
+      exam: 'What is typically asked: …'                               // optional
     }
   ],
-  terms: [ { en: 'Dispatch latency', ru: 'Задержка диспетчеризации', def: 'Время, за которое dispatcher останавливает один процесс и запускает другой.' } ],
-  questions: [ ... ]           // см. «Вопросы»
+  terms: [ { en: 'Dispatch latency', ru: 'Задержка диспетчеризации', def: 'Time the dispatcher needs to stop one process and start another.' } ],
+  questions: [ ... ]
 });
 ```
-Внутри `html` можно вставить визуализацию в конкретное место: `<div data-viz="0"></div>` — индекс в массиве `viz` этой секции. Тогда она рендерится там, а не в конце.
+The UI renders: module `bridge` + `intro` + an automatic **roadmap** (section titles + `why`), then each section as
+`lead` (highlighted "Why this matters" box) → `html` + viz → `takeaway` ("Key idea" box) → `exam` tip.
+`terms[].ru` is required: the translator uses `terms` as its phrase dictionary (clicking any word of "dispatch latency"
+shows "задержка диспетчеризации"). Include in `terms` every important multi-word technical phrase of the module.
 
-## HTML-разметка внутри `html`
-Используй template literals (обратные кавычки). Внутри **не используй** обратные кавычки и `${`.
-- Списки: `<ul><li>…</li></ul>`, `<ol>`.
-- Термин: `<b>Term</b>`; inline-код/команды: `<code>fork()</code>`.
-- Таблица: `<table class="t"><tr><th>…</th></tr><tr><td>…</td></tr></table>`.
-- Блок кода: `<pre class="code" data-lang="c">…</pre>` (`c` | `bash` | `text`). Экранируй `<` `>` `&` как `&lt;` `&gt;` `&amp;`.
-- Плашки: `<div class="callout key">главное</div>`, `<div class="callout warn">типичная ошибка / ловушка</div>`, `<div class="callout note">заметка</div>`.
-- Две колонки (сравнение): `<div class="cols"><div>…</div><div>…</div></div>`.
-- Формула: `<div class="formula">Average waiting time = (0 + 24 + 27) / 3 = 17</div>`.
-- Pros/cons: `<div class="cols"><div class="pros"><b>+</b><ul>…</ul></div><div class="cons"><b>−</b><ul>…</ul></div></div>`.
-- Inline SVG допускается для единичных схем (см. «Inline SVG»), но сначала проверь, нельзя ли собрать схему из компонентов `graph` / `flow` / `layers` / `timeline` / `tree`.
+## HTML conventions (inside `html`)
+Template literals (backticks); inside them never use backticks or `${` (write `&#96;` and `&#36;{`).
+- Lists `<ul><li>`, `<ol>`; terms `<b>`; inline code `<code>`.
+- Table `<table class="t"><tr><th>…</th></tr><tr><td>…</td></tr></table>` — always with a sentence before and after.
+- Code block `<pre class="code" data-lang="c">…</pre>` (`c` | `bash` | `text`), escape `<` `>` `&`.
+- Callouts: `<div class="callout key">`, `<div class="callout warn">` (pitfall / slide error), `<div class="callout note">`.
+- Analogy: `<div class="callout analogy">Think of it like …</div>` (max one or two per module section, only if it helps).
+- Steps of a mechanism: `<ol class="steps"><li>…</li></ol>` (rendered as numbered step cards).
+- Two columns: `<div class="cols"><div>…</div><div>…</div></div>`; pros/cons `<div class="pros">` / `<div class="cons">`.
+- Formula / worked example: `<div class="formula">…</div>`.
+- Inline viz placement: `<div data-viz="0"></div>` (index into the section's `viz`).
+- Inline SVG allowed (`<svg class="d" viewBox="…">` with classes `d-box acc|ok|warn|bad|muted`, `d-txt sm|b`, `d-line`, `d-arrow`), no hard-coded colours.
 
-## Визуализации (`viz`)
-Все компоненты адаптивны и поддерживают тёмную тему. Тоны (`tone`): `'acc'` (основной акцент), `'ok'` (зелёный), `'warn'` (жёлтый), `'bad'` (красный), `'muted'` (серый), `'c1'..'c6'` (категориальные цвета). По умолчанию — нейтральный.
+## Visualizations (`viz`) — unchanged from v1
+`flow`, `layers`, `graph`, `timeline`, `stepper`, `tree`, `scheduler`, `mlfq`, `procStates`, `forkTree`,
+`threadModels`, `amdahl`, `race`, `peterson`, `semaphore`, `philosophers`, `banker`, `diskSched`, `hddCalc`, `raid`,
+`chmod`, `ioModes`. Props are exactly as in v1 (see the v1 modules and `js/viz/*.js`). Keep the v1 viz and their props
+(they were verified) but translate every label/caption/note/step text into English. Add more viz only if it clarifies.
 
-### Универсальные
-- **`flow`** — цепочка блоков со стрелками.
-  `{ dir:'h'|'v', steps:[{label, sub?, tone?}], loop?:false }` — `loop:true` рисует стрелку от последнего к первому.
-- **`layers`** — стопка слоёв (структура ядра, иерархия памяти, слои системы).
-  `{ layers:[{label, sub?, tone?}], pyramid?:false, top?:'подпись сверху', bottom?:'подпись снизу' }` — первый слой рисуется сверху. `pyramid:true` → сужение кверху.
-- **`graph`** — узлы и рёбра в координатах (диаграммы состояний, RAG, wait-for graph, схемы).
-  `{ w:600, h:300, nodes:[{id, label, x, y, shape?:'rect'|'circle'|'pill'|'res', tone?, w?, h?, sub?, inst?}], edges:[{from, to, label?, tone?, dashed?, bend?:0, both?:false}] }`
-  - `x,y` — центр узла в координатах viewBox `w×h`. Размер rect по умолчанию 110×44, circle r=26.
-  - `shape:'res'` — ресурс для Resource-Allocation Graph: прямоугольник с `inst` точками-экземплярами (по умолчанию 1).
-  - `bend` — изгиб ребра (например 30 или -30) — для пар встречных рёбер и петель.
-  - `dashed:true` — пунктир (claim edge).
-- **`timeline`** — дорожки с отрезками (Gantt-подобные схемы, interrupt timeline, сравнение режимов I/O).
-  `{ max:30, rows:[{label, segs:[{from, to, label?, tone?}]}], marks?:[{t, label}], ticks?:[0,4,7,…] }`
-- **`stepper`** — пошаговая трассировка кода: подсвечивает строку и показывает состояние переменных/пояснение.
-  `{ code:'...', lang:'c'|'bash'|'text', steps:[{line: 3 | [3,4], note:'что происходит', vars?:{counter:5, 'register1':6}, out?:'вывод на этом шаге'}] }` — строки нумеруются с 1.
-- **`tree`** — дерево (иерархия каталогов, дерево процессов).
-  `{ root:{label, note?, tone?, children:[...]}, mono?:true }` — `mono:true` рисует моноширинным шрифтом.
+## Questions (English)
+- Keep the v1 questions and their ids (the mistakes bank uses ids); translate them into clear English and improve
+  wording/explanations. You may fix a weak question or add new ones (new ids continue the numbering).
+- Types: `single`, `multi`, `tf`, `code` (with `code` + `lang`). Options are shuffled at runtime — no "both above".
+- `explain` (required): why the right answer is right and why the tempting wrong one is wrong, 1–3 sentences.
+- `section`: an existing section id. `diff`: 1–3.
+- Code in `code` fields stays byte-identical to v1 unless it contains Russian text (translate comments/strings only if
+  that does not change the answer).
+- `q`, `options`, `explain` are plain text (may use `<code>`, `<b>`, or backtick spans for code).
 
-### Специализированные (интерактивные)
-- **`scheduler`** — симулятор CPU scheduling: таблица процессов (редактируемая) → Gantt + waiting/turnaround/response + средние.
-  `{ algo:'FCFS'|'SJF'|'SRTF'|'RR'|'PRIO'|'PRIO_P'|'PRIO_RR', quantum?:4, processes:[{name:'P1', arrival:0, burst:24, priority?:3}], lockAlgo?:false }`
-  (PRIO — non-preemptive priority, PRIO_P — preemptive, PRIO_RR — priority + RR среди равных; меньшее число = выше приоритет.)
-- **`mlfq`** — схема Multilevel Feedback Queue с анимацией понижения процесса. `{ queues:[{label:'Q0', algo:'RR q=8'}, …], burst:30 }`
-- **`procStates`** — интерактивная диаграмма состояний процесса (new/ready/running/waiting/terminated) с кнопками событий. `{}`
-- **`forkTree`** — дерево процессов для `n` последовательных `fork()` (2ⁿ процессов) со слайдером. `{ n:3, max:5 }`
-- **`threadModels`** — модели многопоточности с переключателем. `{ model:'m1'|'11'|'mm'|'2l' }`
-- **`amdahl`** — закон Амдала: слайдеры S (последовательная доля) и N (ядра) + график speedup. `{ s:0.25, n:4 }`
-- **`race`** — пошаговое чередование `counter++` / `counter--` на уровне регистров (пример со слайдов: counter=5 → 4 или 6). `{ start:5 }`
-- **`peterson`** — пошаговый Peterson's solution для P0/P1 (flag[], turn). `{}`
-- **`semaphore`** — counting semaphore: N ресурсов, процессы делают wait()/signal(), очередь ожидающих. `{ value:3, label:'printers', procs:6 }`
-- **`philosophers`** — Dining Philosophers: 5 философов, палочки-семафоры, демонстрация deadlock и решений. `{ n:5 }`
-- **`banker`** — Banker's algorithm: Allocation/Max/Need/Available, пошаговый safety algorithm и проверка запроса.
-  `{ res:['A','B','C'], names:['T0','T1','T2','T3','T4'], available:[3,3,2], max:[[7,5,3],…], alloc:[[0,1,0],…], request?:{who:1, vec:[1,0,2]} }`
-- **`diskSched`** — симулятор disk scheduling (FCFS/SSTF/SCAN/LOOK/C-SCAN/C-LOOK): график движения головки + суммарное перемещение.
-  `{ queue:[98,183,37,122,14,124,65,67], head:53, max:199, algo:'FCFS', dir:'down' }`
-- **`hddCalc`** — калькулятор времени доступа HDD. `{ rpm:7200, seek:5, rateGbps:1, kb:4, overheadMs:0.1 }`
-- **`raid`** — раскладка блоков по дискам для RAID 0/1/4/5/6/0+1/1+0 + XOR-паритет. `{ level:5, disks:4 }`
-- **`chmod`** — калькулятор прав: чекбоксы rwx ↔ octal ↔ symbolic ↔ строка `ls -l`. `{ mode:'754', file:'script.sh' }`
-- **`ioModes`** — сравнение Programmed I/O / Interrupt-driven / DMA (что делает CPU во времени). `{}`
-
-Если нужна визуализация, которой нет в списке, — собери её из универсальных компонентов или inline SVG. Не изобретай новые имена компонентов.
-
-### Inline SVG
-`<svg class="d" viewBox="0 0 600 200">…</svg>`; классы: `d-box` (прямоугольник), `d-box acc|ok|warn|bad|muted`, `d-txt`, `d-txt sm`, `d-txt b` (жирный), `d-line`, `d-arrow` (линия со стрелкой; маркер уже определён глобально, `marker-end` не нужен). Никаких жёстко заданных цветов (`fill="#..."`) — только классы.
-
-## Вопросы
-Формат экзамена: тест + вопросы по коду. **~30 вопросов на модуль** (лабы: 20–30). Распределение сложности `diff`: ~30% 1, ~50% 2, ~20% 3.
-```js
-{ id:'sch-01', type:'single', q:'…?', options:['…','…','…','…'], answer:2, explain:'Почему верно 2 и почему остальные неверны (кратко).', section:'criteria', diff:2 }
-{ id:'sch-02', type:'multi',  q:'Какие … ? (несколько ответов)', options:[…], answer:[0,2], explain:'…', section:'…', diff:2 }
-{ id:'sch-03', type:'tf',     q:'Утверждение.', answer:true, explain:'…', section:'…', diff:1 }
-{ id:'sch-04', type:'code',   q:'Что выведет программа?', lang:'c', code:'…', options:[…], answer:1, explain:'…', section:'…', diff:3 }
-```
-- `id`: `<префикс модуля>-NN`, уникален глобально. Префиксы: basics `bas`, services `svc`, processes `proc`, threads `thr`, scheduling `sch`, sync `syn`, deadlock `dl`, io `io`, storage `ms`, linux `lin`, linux-proc `lproc`, bash `sh`, devices `dev`.
-- `section` — `id` существующей секции этого модуля (по нему делается ссылка «к теории»).
-- Вопрос на русском, термины на английском, как на слайдах. 4 варианта (иногда 3–5). Дистракторы правдоподобные, без «все вышеперечисленное» без нужды.
-- Варианты **перемешиваются при показе**, поэтому не пиши варианты, зависящие от позиции («оба выше», «A и B», «все перечисленные» допустимо только как самостоятельный вариант).
-- `explain` обязателен: 1–3 предложения, объясняет и правильный, и ключевой неверный вариант.
-- `type:'code'` — фрагмент кода (C или Bash) из стиля слайдов: «что выведет», «сколько раз напечатает», «какая строка нужна», «чем закончится». Код в `code` — обычная строка с `\n` (или template literal), без HTML-экранирования. Ответ должен быть однозначным и проверенным (Bash — прогони мысленно очень аккуратно; если можешь — проверь в реальном bash).
-- Проверь каждый ответ дважды. Неверный ключ хуже, чем отсутствие вопроса.
-- Вопросы покрывают все секции модуля, а не только первые.
-
-## Проверка
-После написания файла: `node tools/validate.js content/NN-<id>.js` (если файла validate.js ещё нет — проверь синтаксис через `node --check content/NN-<id>.js`).
+## Check
+`node tools/validate.js content/NN-<id>.js` must report 0 errors and 0 warnings. The validator flags Cyrillic text
+outside `terms[].ru` / `titleRu`, missing `lead` / `takeaway` / `why` / `bridge` / `intro`, and the usual schema errors.

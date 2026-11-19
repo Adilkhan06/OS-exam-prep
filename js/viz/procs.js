@@ -28,15 +28,15 @@
     el.append(box);
     const g = OS.viz.graph(box, spec);
     const EV = {
-      new: [['admit', 'admitted', 'ready', 'ОС приняла процесс: PCB создан, процесс в ready queue.']],
-      ready: [['dispatch', 'scheduler dispatch', 'running', 'Scheduler выбрал процесс, dispatcher передал ему CPU.']],
+      new: [['admit', 'admitted', 'ready', 'The OS admitted the process: its PCB is created and it joins the ready queue.']],
+      ready: [['dispatch', 'scheduler dispatch', 'running', 'The scheduler selected the process and the dispatcher gave it the CPU.']],
       running: [
-        ['int', 'interrupt', 'ready', (D ? '(2) ' : '') + 'Прерывание (например, истёк квант таймера) — процесс вытеснен обратно в ready.'],
-        ['io', 'I/O or event wait', 'waiting', (D ? '(1) ' : '') + 'Процесс запросил I/O или ждёт событие — уходит в waiting.'],
-        ['exit', 'exit', 'terminated', (D ? '(4) ' : '') + 'Процесс завершился (exit()).']
+        ['int', 'interrupt', 'ready', (D ? '(2) ' : '') + 'An interrupt (e.g. the timer quantum expired) preempted the process back to ready.'],
+        ['io', 'I/O or event wait', 'waiting', (D ? '(1) ' : '') + 'The process requested I/O or waits for an event, so it moves to waiting.'],
+        ['exit', 'exit', 'terminated', (D ? '(4) ' : '') + 'The process terminated (exit()).']
       ],
-      waiting: [['done', 'I/O or event completion', 'ready', (D ? '(3) ' : '') + 'I/O завершён / событие произошло — процесс снова готов.']],
-      terminated: [['reset', 'начать заново', 'new', 'Новый процесс создан.']]
+      waiting: [['done', 'I/O or event completion', 'ready', (D ? '(3) ' : '') + 'The I/O completed / the event happened, so the process is ready again.']],
+      terminated: [['reset', 'start again', 'new', 'A new process was created.']]
     };
     let cur = 'new';
     const btns = h('div', { class: 'proc-btns', style: { marginTop: '10px' } });
@@ -48,14 +48,14 @@
         sh.setAttribute('class', 'n-shape ' + (id === cur ? 'tone-acc' : id === 'terminated' && cur === 'terminated' ? 'tone-muted' : ''));
       });
       btns.innerHTML = '';
-      btns.append(h('span', { class: 'small muted', style: { alignSelf: 'center' }, html: 'Состояние: <b>' + cur + '</b> · событие:' }));
+      btns.append(h('span', { class: 'small muted', style: { alignSelf: 'center' }, html: 'State: <b>' + cur + '</b> · event:' }));
       EV[cur].forEach(([, label, to, text]) => {
         const b = h('button', { class: 'btn sm', type: 'button', text: label });
         b.onclick = () => { cur = to; log.innerHTML = text; paint(); };
         btns.append(b);
       });
     }
-    log.textContent = 'Нажимай события и смотри, как процесс переходит между состояниями.';
+    log.textContent = 'Click the events and watch the process move between states.';
     paint();
   };
 
@@ -65,7 +65,7 @@
     let n = Math.min(p.n || 3, max);
     const input = h('input', { type: 'range', min: 1, max, value: n });
     const val = h('b', { class: 'mono' });
-    const ctr = h('div', { class: 'viz-controls' }, h('label', {}, 'Число fork()', input, val));
+    const ctr = h('div', { class: 'viz-controls' }, h('label', {}, 'Number of fork() calls', input, val));
     const codeBox = h('pre', { class: 'code', 'data-lang': 'c', style: { margin: '0 0 10px' } });
     const svgBox = h('div');
     const res = h('div', { class: 'viz-result' });
@@ -107,7 +107,7 @@
       });
       svgBox.innerHTML = '';
       svgBox.append(svg);
-      res.innerHTML = `Процессов всего: <b>2<sup>${n}</sup> = ${2 ** n}</b> (создано новых: ${2 ** n - 1}). Строка <code>hello</code> напечатана <b>${2 ** n}</b> ${OS.plural(2 ** n, 'раз', 'раза', 'раз')}. На каждом fork() число процессов удваивается.`;
+      res.innerHTML = `Total processes: <b>2<sup>${n}</sup> = ${2 ** n}</b> (${2 ** n - 1} new). <code>hello</code> is printed <b>${2 ** n}</b> times. Every fork() doubles the number of processes.`;
     }
     draw();
   };
@@ -116,10 +116,10 @@
   OS.viz.threadModels = function (el, p) {
     const MODELS = [['m1', 'Many-to-One'], ['11', 'One-to-One'], ['mm', 'Many-to-Many'], ['2l', 'Two-level']];
     const INFO = {
-      m1: 'Много user threads → <b>один</b> kernel thread. Управление потоками в user space (быстро), но блокирующий system call <b>блокирует весь процесс</b>; потоки <b>не выполняются параллельно</b> на multicore. Примеры: Solaris Green Threads, GNU Portable Threads.',
-      11: 'Каждый user thread → <b>свой</b> kernel thread. Больше concurrency, блокировка одного не мешает другим, настоящий параллелизм. Минус: создание user thread = создание kernel thread (overhead), число потоков может ограничиваться. Примеры: Windows, Linux.',
-      mm: 'Много user threads мультиплексируются на <b>меньшее или равное</b> число kernel threads. ОС создаёт достаточно kernel threads; нет минусов M:1 и 1:1. Сложно реализовать, встречается редко (Windows с ThreadFiber).',
-      '2l': 'Как Many-to-Many, но дополнительно позволяет <b>привязать (bind)</b> user thread к отдельному kernel thread.'
+      m1: 'Many user threads → <b>one</b> kernel thread. Thread management happens in user space (fast), but one blocking system call <b>blocks the whole process</b>, and threads <b>cannot run in parallel</b> on a multicore CPU. Examples: Solaris Green Threads, GNU Portable Threads.',
+      11: 'Each user thread → <b>its own</b> kernel thread. More concurrency: one blocking thread does not stop the others, and threads run in parallel. Downside: creating a user thread means creating a kernel thread (overhead), so the number of threads may be limited. Examples: Windows, Linux.',
+      mm: 'Many user threads are multiplexed onto a <b>smaller or equal</b> number of kernel threads. The OS creates enough kernel threads, avoiding the drawbacks of M:1 and 1:1. Hard to implement and rare in practice (Windows with ThreadFiber).',
+      '2l': 'Like many-to-many, but it also allows a user thread to be <b>bound</b> to its own kernel thread.'
     };
     let model = p.model || 'm1';
     const svgBox = h('div');
@@ -175,7 +175,7 @@
       nV.textContent = N;
       const v = sp(S, N);
       formula.innerHTML = `speedup ≤ 1 / (S + (1 − S) / N) = 1 / (${fmt(S)} + ${fmt(1 - S)} / ${N}) = <b>${fmt(v)}</b>` +
-        (S > 0 ? ` &nbsp;·&nbsp; при N → ∞ предел = 1 / S = <b>${fmt(1 / S)}</b>` : ' &nbsp;·&nbsp; S = 0: идеальное линейное ускорение');
+        (S > 0 ? ` &nbsp;·&nbsp; as N → ∞ the limit is 1 / S = <b>${fmt(1 / S)}</b>` : ' &nbsp;·&nbsp; S = 0: perfect linear speedup');
       const W = 560, H = 250, L = 40, B = 30, T = 10, R = 12;
       const xMax = 64;
       const yMax = Math.max(4, Math.ceil(Math.min(xMax, Math.max(sp(S, xMax), sp(0.05, xMax))) / 4) * 4);

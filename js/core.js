@@ -179,7 +179,7 @@
       if (!fn) throw new Error('unknown viz: ' + spec.name);
       fn(body, Object.assign({}, spec.props || {}));
     } catch (e) {
-      body.append(OS.h('div', { class: 'viz-err', text: 'Ошибка визуализации: ' + e.message }));
+      body.append(OS.h('div', { class: 'viz-err', text: 'Visualization error: ' + e.message }));
       console.error(e);
     }
     return wrap;
@@ -213,7 +213,7 @@
     document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.dataset.nav === name || (name === 'm' && a.dataset.nav === 'home')));
     try { view(app, parts.slice(1), params); } catch (e) {
       console.error(e);
-      app.append(OS.h('div', { class: 'page narrow' }, OS.h('div', { class: 'card' }, 'Ошибка: ' + e.message)));
+      app.append(OS.h('div', { class: 'page narrow' }, OS.h('div', { class: 'card' }, 'Error: ' + e.message)));
     }
     if (!OS.keepScroll) window.scrollTo(0, 0);
     OS.keepScroll = false;

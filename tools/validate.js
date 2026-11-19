@@ -42,9 +42,17 @@ const ids = new Set();
 const qids = new Set();
 for (const m of modules) {
   const W = m.__file + (m.id ? ` [${m.id}]` : '');
-  for (const k of ['id', 'num', 'group', 'title', 'titleRu', 'icon', 'sources', 'summary', 'sections', 'terms', 'questions']) {
+  for (const k of ['id', 'num', 'group', 'title', 'titleRu', 'icon', 'sources', 'summary', 'bridge', 'intro', 'sections', 'terms', 'questions']) {
     if (m[k] === undefined) err(W, `missing field "${k}"`);
   }
+  // v2: English only — Cyrillic allowed only in titleRu and terms[].ru
+  const CYR = /[Ѐ-ӿ]/;
+  const scan = (obj, path, skip) => {
+    if (typeof obj === 'string') { if (CYR.test(obj) && !skip) warn(W, `Cyrillic text at ${path}: "${obj.replace(/\s+/g, ' ').slice(0, 60)}"`); return; }
+    if (Array.isArray(obj)) return obj.forEach((x, i) => scan(x, `${path}[${i}]`, skip));
+    if (obj && typeof obj === 'object') for (const k of Object.keys(obj)) scan(obj[k], `${path}.${k}`, skip || k === 'ru' || k === 'titleRu' || k === '__file');
+  };
+  scan(m, 'module', false);
   if (ids.has(m.id)) err(W, 'duplicate module id'); ids.add(m.id);
   if (!['theory', 'lab'].includes(m.group)) err(W, 'group must be theory|lab');
   const secIds = new Set();
@@ -53,6 +61,9 @@ for (const m of modules) {
     if (!s.id || !/^[a-z0-9-]+$/.test(s.id)) err(SW, 'bad/missing id');
     if (secIds.has(s.id)) err(SW, 'duplicate section id'); secIds.add(s.id);
     if (!s.h) err(SW, 'missing h');
+    if (!s.lead) err(SW, 'missing lead');
+    if (!s.takeaway) err(SW, 'missing takeaway');
+    if (!s.why) err(SW, 'missing why');
     if (!s.html || s.html.trim().length < 20) err(SW, 'missing/short html');
     if (s.html && /\$\{/.test(s.html)) warn(SW, 'html contains ${');
     if (s.html && /(fill|stroke)="#/.test(s.html)) warn(SW, 'inline SVG uses hardcoded colors');
@@ -69,7 +80,7 @@ for (const m of modules) {
       if (open !== close) warn(SW, `<${tag}> open ${open} / close ${close}`);
     }
   });
-  (m.terms || []).forEach((t, i) => { if (!t.en || !t.def) err(`${W} term#${i}`, 'term needs en + def'); });
+  (m.terms || []).forEach((t, i) => { if (!t.en || !t.def || !t.ru) err(`${W} term#${i}`, 'term needs en + ru + def'); });
   const pos = {};
   (m.questions || []).forEach((q, i) => {
     const QW = `${W} q#${i} (${q.id})`;

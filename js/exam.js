@@ -53,14 +53,14 @@
     if (parts[0] === 'result') return resultView(app, parts[1]);
     const page = h('div', { class: 'page narrow' });
     app.append(page);
-    page.append(h('h1', { text: 'Режим экзамена' }));
+    page.append(h('h1', { text: 'Exam mode' }));
     const act = OS.state.active;
     if (act && act.qids.every(id => OS.qById(id))) {
       const left = act.deadline ? Math.max(0, act.deadline - Date.now()) : null;
       page.append(h('div', { class: 'callout warn row', style: { justifyContent: 'space-between' } },
-        h('span', { html: `Есть незавершённый экзамен: отвечено ${Object.keys(act.answers).length} из ${act.qids.length}` + (left != null ? `, осталось ${Math.ceil(left / 60000)} мин.` : '.') }),
-        h('span', { class: 'row' }, h('a', { class: 'btn sm primary', href: '#/exam/run', text: 'Продолжить' }),
-          h('button', { class: 'btn sm ghost danger', type: 'button', text: 'Отменить', onclick: () => { OS.state.active = null; OS.save(); OS.route(); } }))));
+        h('span', { html: `You have an unfinished exam: ${Object.keys(act.answers).length} of ${act.qids.length} answered` + (left != null ? `, ${Math.ceil(left / 60000)} min left.` : '.') }),
+        h('span', { class: 'row' }, h('a', { class: 'btn sm primary', href: '#/exam/run', text: 'Continue' }),
+          h('button', { class: 'btn sm ghost danger', type: 'button', text: 'Cancel', onclick: () => { OS.state.active = null; OS.save(); OS.route(); } }))));
     }
     const fromMistakes = params.get('mistakes') === '1';
     const only = params.get('m');
@@ -68,8 +68,8 @@
     page.append(card);
     if (fromMistakes) {
       const qs = Object.keys(OS.state.mistakes).map(OS.qById).filter(Boolean);
-      card.append(h('p', { html: `Экзамен из банка ошибок: <b>${qs.length}</b> ${OS.plural(qs.length, 'вопрос', 'вопроса', 'вопросов')}. Таймер ${Math.round(qs.length * MIN_PER_Q)} мин.` }));
-      card.append(h('div', {}, h('button', { class: 'btn primary lg', type: 'button', text: 'Начать', disabled: !qs.length, onclick: () => startExam(OS.shuffle(qs), { timer: true, source: 'mistakes' }) })));
+      card.append(h('p', { html: `Exam from your mistakes bank: <b>${OS.pl(qs.length, 'question')}</b>. Timer: ${Math.round(qs.length * MIN_PER_Q)} min.` }));
+      card.append(h('div', {}, h('button', { class: 'btn primary lg', type: 'button', text: 'Start', disabled: !qs.length, onclick: () => startExam(OS.shuffle(qs), { timer: true, source: 'mistakes' }) })));
       return;
     }
     const chosen = new Set(only && OS.byId[only] ? [only] : OS.modules.map(m => m.id));
@@ -83,33 +83,33 @@
       const cb = h('input', { type: 'checkbox', checked: chosen.has(m.id) });
       cb.addEventListener('change', () => { if (cb.checked) chosen.add(m.id); else chosen.delete(m.id); update(); });
       boxes[m.id] = cb;
-      grid.append(h('label', { class: 'check' }, cb, h('span', { text: `${m.icon} ${m.titleRu}` }), h('span', { class: 'cnt', text: m.questions.length })));
+      grid.append(h('label', { class: 'check' }, cb, h('span', { text: `${m.icon} ${m.title}` }), h('span', { class: 'cnt', text: m.questions.length })));
     });
     const setAll = pred => { OS.modules.forEach(m => { const on = pred(m); boxes[m.id].checked = on; if (on) chosen.add(m.id); else chosen.delete(m.id); }); update(); };
-    modBlock.append(h('div', { class: 'row', style: { justifyContent: 'space-between', marginBottom: '8px' } }, h('h3', { style: { margin: 0 }, text: 'Темы' }),
-      h('div', { class: 'row' }, h('button', { class: 'btn sm ghost', type: 'button', text: 'Все', onclick: () => setAll(() => true) }),
-        h('button', { class: 'btn sm ghost', type: 'button', text: 'Только теория', onclick: () => setAll(m => m.group === 'theory') }),
-        h('button', { class: 'btn sm ghost', type: 'button', text: 'Только лабы', onclick: () => setAll(m => m.group === 'lab') }),
-        h('button', { class: 'btn sm ghost', type: 'button', text: 'Ничего', onclick: () => setAll(() => false) }))), grid);
+    modBlock.append(h('div', { class: 'row', style: { justifyContent: 'space-between', marginBottom: '8px' } }, h('h3', { style: { margin: 0 }, text: 'Topics' }),
+      h('div', { class: 'row' }, h('button', { class: 'btn sm ghost', type: 'button', text: 'All', onclick: () => setAll(() => true) }),
+        h('button', { class: 'btn sm ghost', type: 'button', text: 'Theory only', onclick: () => setAll(m => m.group === 'theory') }),
+        h('button', { class: 'btn sm ghost', type: 'button', text: 'Labs only', onclick: () => setAll(m => m.group === 'lab') }),
+        h('button', { class: 'btn sm ghost', type: 'button', text: 'None', onclick: () => setAll(() => false) }))), grid);
     card.append(modBlock);
 
-    const cntBlock = h('div', { class: 'setup-block' }, h('h3', { text: 'Количество вопросов' }), OS.seg([[10, '10'], [15, '15'], [30, '30'], [45, '45'], [60, '60'], [9999, 'Все']], count, v => { count = v; update(); }));
-    const typeBlock = h('div', { class: 'setup-block' }, h('h3', { text: 'Тип вопросов' }), OS.seg([['mixed', 'Смешанные'], ['theory', 'Только теория'], ['code', 'Только код']], type, v => { type = v; update(); }));
+    const cntBlock = h('div', { class: 'setup-block' }, h('h3', { text: 'Number of questions' }), OS.seg([[10, '10'], [15, '15'], [30, '30'], [45, '45'], [60, '60'], [9999, 'All']], count, v => { count = v; update(); }));
+    const typeBlock = h('div', { class: 'setup-block' }, h('h3', { text: 'Question type' }), OS.seg([['mixed', 'Mixed'], ['theory', 'Theory only'], ['code', 'Code only']], type, v => { type = v; update(); }));
     const tCb = h('input', { type: 'checkbox', checked: true });
     const tMin = h('input', { type: 'number', min: 1, style: { width: '80px' } });
     tCb.addEventListener('change', () => { timer = tCb.checked; update(); });
     tMin.addEventListener('input', () => { minutes = +tMin.value || null; });
-    const timerBlock = h('div', { class: 'setup-block' }, h('h3', { text: 'Время' }),
-      h('div', { class: 'viz-controls', style: { marginBottom: 0 } }, h('label', { class: 'learned' }, tCb, 'Таймер'), h('label', {}, tMin, 'мин'), h('span', { class: 'small muted', text: `по умолчанию ${MIN_PER_Q} мин на вопрос; по истечении — автосдача` })));
+    const timerBlock = h('div', { class: 'setup-block' }, h('h3', { text: 'Time' }),
+      h('div', { class: 'viz-controls', style: { marginBottom: 0 } }, h('label', { class: 'learned' }, tCb, 'Timer'), h('label', {}, tMin, 'min'), h('span', { class: 'small muted', text: `default ${MIN_PER_Q} min per question; the exam is submitted automatically when time runs out` })));
     card.append(cntBlock, typeBlock, timerBlock);
     const summary = h('div', { class: 'viz-result' });
-    const go = h('button', { class: 'btn primary lg', type: 'button', text: 'Начать экзамен' });
+    const go = h('button', { class: 'btn primary lg', type: 'button', text: 'Start exam' });
     card.append(summary, h('div', {}, go));
-    page.append(h('p', { class: 'small muted', style: { marginTop: '14px' }, html: 'Во время экзамена ответы не проверяются. Навигация: <span class="kbd">1</span>–<span class="kbd">5</span> выбор, <span class="kbd">←</span> <span class="kbd">→</span> переход, <span class="kbd">F</span> отметить вопрос. Итог — в процентах и по шкале /30 (зачёт от 18).' }));
+    page.append(h('p', { class: 'small muted', style: { marginTop: '14px' }, html: 'Answers are not checked during the exam. Keys: <span class="kbd">1</span>–<span class="kbd">5</span> choose, <span class="kbd">←</span> <span class="kbd">→</span> move, <span class="kbd">F</span> flag a question, <span class="kbd">T</span> translation mode. The result is shown in % and on the Italian /30 scale (pass from 18).' }));
     go.onclick = () => {
       const mods = OS.modules.filter(m => chosen.has(m.id));
       const qs = pickQuestions(mods, count, type);
-      if (!qs.length) return OS.toast('Нет вопросов для выбранных настроек');
+      if (!qs.length) return OS.toast('No questions for these settings');
       startExam(qs, { timer, minutes: minutes || qs.length * MIN_PER_Q, type, modules: [...chosen] });
     };
     function update() {
@@ -120,7 +120,7 @@
       tMin.disabled = !timer;
       if (!minutes || document.activeElement !== tMin) tMin.value = Math.round(n * MIN_PER_Q) || '';
       minutes = null;
-      summary.innerHTML = n ? `Будет <b>${n}</b> ${OS.plural(n, 'вопрос', 'вопроса', 'вопросов')} из ${mods.length} ${OS.plural(mods.length, 'темы', 'тем', 'тем')} (доступно ${avail})` + (timer ? `, время <b>${Math.round(n * MIN_PER_Q)} мин</b>.` : ', без таймера.') : 'Выбери хотя бы одну тему с вопросами.';
+      summary.innerHTML = n ? `<b>${OS.pl(n, 'question')}</b> from ${OS.pl(mods.length, 'topic')} (${avail} available)` + (timer ? `, time <b>${Math.round(n * MIN_PER_Q)} min</b>.` : ', no timer.') : 'Select at least one topic with questions.';
       go.disabled = !n;
     }
     update();
@@ -143,12 +143,12 @@
     const timerEl = h('div', { class: 'timer' });
     const answeredEl = h('div', { class: 'small muted' });
     const qgrid = h('div', { class: 'qgrid' });
-    const submitBtn = h('button', { class: 'btn primary', type: 'button', text: 'Сдать экзамен' });
+    const submitBtn = h('button', { class: 'btn primary', type: 'button', text: 'Submit exam' });
     submitBtn.onclick = () => {
       const left = qs.length - Object.keys(A.answers).filter(k => hasAns(A.answers[k])).length;
-      if (confirm(left ? `Без ответа: ${left}. Сдать экзамен?` : 'Сдать экзамен?')) submit();
+      if (confirm(left ? `Unanswered: ${left}. Submit the exam?` : 'Submit the exam?')) submit();
     };
-    side.append(h('div', { class: 'card' }, h('div', { class: 'small muted', text: A.deadline ? 'Осталось' : 'Прошло' }), timerEl, answeredEl),
+    side.append(h('div', { class: 'card' }, h('div', { class: 'small muted', text: A.deadline ? 'Time left' : 'Elapsed' }), timerEl, answeredEl),
       h('div', { class: 'card' }, qgrid), submitBtn);
     const hasAns = v => v != null && !(Array.isArray(v) && !v.length);
     const gridBtns = qs.map((q, i) => {
@@ -162,7 +162,7 @@
         b.className = (hasAns(A.answers[i]) ? 'ans ' : '') + (A.flags[i] ? 'flag ' : '') + (i === A.cur ? 'cur' : '');
       });
       const n = Object.keys(A.answers).filter(k => hasAns(A.answers[k])).length;
-      answeredEl.textContent = `Отвечено ${n} из ${qs.length}`;
+      answeredEl.textContent = `Answered ${n} of ${qs.length}`;
     }
     let card;
     function show() {
@@ -172,11 +172,11 @@
         mode: 'exam', index: i, total: qs.length, order: A.orders[i], selected: A.answers[i],
         onSelect: sel => { if (hasAns(sel)) A.answers[i] = sel; else delete A.answers[i]; OS.save(); paintGrid(); }
       });
-      const flagBtn = h('button', { class: 'btn ghost', type: 'button', html: (A.flags[i] ? '★ Отмечен' : '☆ Отметить') + ' <span class="kbd">F</span>' });
+      const flagBtn = h('button', { class: 'btn ghost', type: 'button', html: (A.flags[i] ? '★ Flagged' : '☆ Flag') + ' <span class="kbd">F</span>' });
       flagBtn.onclick = () => { toggleFlag(); };
-      const prev = h('button', { class: 'btn', type: 'button', html: '← Назад', disabled: i === 0 });
+      const prev = h('button', { class: 'btn', type: 'button', html: '← Back', disabled: i === 0 });
       prev.onclick = () => go(-1);
-      const next = h('button', { class: 'btn primary', type: 'button', html: i + 1 < qs.length ? 'Далее →' : 'Завершить' });
+      const next = h('button', { class: 'btn primary', type: 'button', html: i + 1 < qs.length ? 'Next →' : 'Finish' });
       next.onclick = () => { if (i + 1 < qs.length) go(1); else submitBtn.click(); };
       card.navBar.append(prev, next, h('span', { class: 'spacer' }), flagBtn);
       mainCol.append(card);
@@ -187,7 +187,7 @@
     function tick() {
       if (A.deadline) {
         const left = A.deadline - Date.now();
-        if (left <= 0) { timerEl.textContent = '0:00'; OS.toast('Время вышло — экзамен сдан автоматически'); return submit(); }
+        if (left <= 0) { timerEl.textContent = '0:00'; OS.toast('Time is up — the exam was submitted automatically'); return submit(); }
         const s = Math.ceil(left / 1000);
         timerEl.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
         timerEl.classList.toggle('low', s <= 60);
@@ -201,7 +201,7 @@
       if (/input|textarea|select/i.test(document.activeElement.tagName)) return;
       if (e.key === 'ArrowRight') go(1);
       else if (e.key === 'ArrowLeft') go(-1);
-      else if (e.key === 'f' || e.key === 'F' || e.key === 'а' || e.key === 'А') toggleFlag();
+      else if (e.key === 'f' || e.key === 'F') toggleFlag();
       else if (card) card.handleKey(e);
     };
     const onUnload = e => { e.preventDefault(); e.returnValue = ''; };
@@ -233,41 +233,41 @@
   }
 
   /* ---------- result ---------- */
-  function fmtDur(ms) { const s = Math.round(ms / 1000); return `${Math.floor(s / 60)} мин ${s % 60} с`; }
+  function fmtDur(ms) { const s = Math.round(ms / 1000); return `${Math.floor(s / 60)} min ${s % 60} s`; }
   function resultView(app, id) {
     const at = OS.state.exams.find(e => e.id === id);
     const page = h('div', { class: 'page narrow' });
     app.append(page);
-    if (!at) { page.append(h('div', { class: 'card empty', text: 'Попытка не найдена.' })); return; }
+    if (!at) { page.append(h('div', { class: 'card empty', text: 'Attempt not found.' })); return; }
     const pass = at.grade >= 18;
     const R = 62, C = 2 * Math.PI * R;
     const ring = h('div', { class: 'ring ' + (pass ? 'pass' : 'fail'), html:
       `<svg viewBox="0 0 140 140"><circle class="bg" cx="70" cy="70" r="${R}" fill="none" stroke-width="12"/><circle class="fg" cx="70" cy="70" r="${R}" fill="none" stroke-width="12" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - at.score)}"/></svg>` +
-      `<div class="ring-txt"><div><b>${at.grade}</b><small>из 30</small></div></div>` });
-    page.append(h('div', { class: 'crumbs' }, h('a', { href: '#/history', text: '← История' })));
+      `<div class="ring-txt"><div><b>${at.grade}</b><small>out of 30</small></div></div>` });
+    page.append(h('div', { class: 'crumbs' }, h('a', { href: '#/history', text: '← History' })));
     page.append(h('div', { class: 'card pad-lg' }, h('div', { class: 'score-hero' }, ring,
       h('div', {},
-        h('h1', { style: { marginBottom: '4px' }, text: pass ? 'Сдано' : 'Не сдано' }),
+        h('h1', { style: { marginBottom: '4px' }, text: pass ? 'Passed' : 'Not passed' }),
         h('div', { class: 'kv', style: { marginBottom: '12px' } },
-          h('span', { html: `Верно: <b>${at.right}/${at.total}</b>` }), h('span', { html: `Процент: <b>${OS.pct(at.score)}</b>` }),
-          h('span', { html: `Время: <b>${fmtDur(at.duration)}</b>` }), h('span', { html: `Дата: <b>${new Date(at.date).toLocaleString('ru-RU')}</b>` })),
+          h('span', { html: `Correct: <b>${at.right}/${at.total}</b>` }), h('span', { html: `Score: <b>${OS.pct(at.score)}</b>` }),
+          h('span', { html: `Time: <b>${fmtDur(at.duration)}</b>` }), h('span', { html: `Date: <b>${new Date(at.date).toLocaleString('en-GB')}</b>` })),
         h('div', { class: 'row' },
-          at.items.some(x => !x.ok) ? h('button', { class: 'btn primary', type: 'button', text: 'Пересдать ошибки', onclick: () => startExam(at.items.filter(x => !x.ok).map(x => OS.qById(x.qid)).filter(Boolean), { timer: true, source: 'retry' }) }) : null,
-          h('a', { class: 'btn', href: '#/exam', text: 'Новый экзамен' }))))));
+          at.items.some(x => !x.ok) ? h('button', { class: 'btn primary', type: 'button', text: 'Retake mistakes', onclick: () => startExam(at.items.filter(x => !x.ok).map(x => OS.qById(x.qid)).filter(Boolean), { timer: true, source: 'retry' }) }) : null,
+          h('a', { class: 'btn', href: '#/exam', text: 'New exam' }))))));
     // per module
     const per = {};
     at.items.forEach(x => { const q = OS.qById(x.qid); if (!q) return; const p = per[q.module] = per[q.module] || [0, 0]; p[1]++; if (x.ok) p[0]++; });
     const bars = h('div', { class: 'bars' });
     Object.entries(per).sort((a, b) => a[1][0] / a[1][1] - b[1][0] / b[1][1]).forEach(([mid, [ok, n]]) => {
       const m = OS.byId[mid];
-      bars.append(h('div', { class: 'bar-row' }, h('a', { href: '#/m/' + mid, text: `${m.icon} ${m.titleRu}` }), h('div', { class: 'bar' + (ok / n >= 0.6 ? ' ok' : '') }, h('i', { style: { width: (ok / n) * 100 + '%', background: ok / n < 0.6 ? 'var(--bad)' : '' } })), h('span', { class: 'v', text: `${ok}/${n}` })));
+      bars.append(h('div', { class: 'bar-row' }, h('a', { href: '#/m/' + mid, text: `${m.icon} ${m.title}` }), h('div', { class: 'bar' + (ok / n >= 0.6 ? ' ok' : '') }, h('i', { style: { width: (ok / n) * 100 + '%', background: ok / n < 0.6 ? 'var(--bad)' : '' } })), h('span', { class: 'v', text: `${ok}/${n}` })));
     });
-    page.append(h('div', { class: 'card', style: { marginTop: '14px' } }, h('h3', { text: 'По темам (сначала слабые)' }), bars));
+    page.append(h('div', { class: 'card', style: { marginTop: '14px' } }, h('h3', { text: 'By topic (weakest first)' }), bars));
     // review
     let filter = 'wrong';
     const list = h('div');
-    page.append(h('div', { class: 'row', style: { margin: '22px 0 10px', justifyContent: 'space-between' } }, h('h2', { style: { margin: 0 }, text: 'Разбор' }),
-      OS.seg([['wrong', 'Ошибки'], ['all', 'Все'], ['right', 'Верные']], filter, v => { filter = v; drawList(); })), list);
+    page.append(h('div', { class: 'row', style: { margin: '22px 0 10px', justifyContent: 'space-between' } }, h('h2', { style: { margin: 0 }, text: 'Review' }),
+      OS.seg([['wrong', 'Mistakes'], ['all', 'All'], ['right', 'Correct']], filter, v => { filter = v; drawList(); })), list);
     function drawList() {
       list.innerHTML = '';
       at.items.forEach((x, i) => {
@@ -279,7 +279,7 @@
         c.classList.add('review-item', x.ok ? 'r-ok' : 'r-bad');
         list.append(c);
       });
-      if (!list.children.length) list.append(h('div', { class: 'card empty', text: filter === 'wrong' ? 'Ошибок нет 🎉' : 'Пусто.' }));
+      if (!list.children.length) list.append(h('div', { class: 'card empty', text: filter === 'wrong' ? 'No mistakes 🎉' : 'Empty.' }));
     }
     drawList();
   }
@@ -288,19 +288,19 @@
   OS.views.history = function (app) {
     const page = h('div', { class: 'page narrow' });
     app.append(page);
-    page.append(h('h1', { text: 'История экзаменов' }));
+    page.append(h('h1', { text: 'Exam history' }));
     const ex = OS.state.exams.slice().reverse();
-    if (!ex.length) { page.append(h('div', { class: 'card empty' }, h('div', { class: 'big', text: '📝' }), h('div', { text: 'Пока нет попыток.' }), h('div', { style: { marginTop: '12px' } }, h('a', { class: 'btn primary', href: '#/exam', text: 'Сдать экзамен' })))); return; }
+    if (!ex.length) { page.append(h('div', { class: 'card empty' }, h('div', { class: 'big', text: '📝' }), h('div', { text: 'No attempts yet.' }), h('div', { style: { marginTop: '12px' } }, h('a', { class: 'btn primary', href: '#/exam', text: 'Take an exam' })))); return; }
     const best = Math.max(...ex.map(e => e.grade));
     const avg = ex.reduce((s, e) => s + e.score, 0) / ex.length;
     page.append(h('div', { class: 'stats', style: { gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: '16px' } },
-      ...[['Попыток', ex.length], ['Лучший результат', best + '/30'], ['Средний %', OS.pct(avg)]].map(([l, v]) => h('div', { class: 'stat' }, h('div', { class: 'stat-label', text: l }), h('div', { class: 'stat-value', text: v })))));
+      ...[['Attempts', ex.length], ['Best result', best + '/30'], ['Average %', OS.pct(avg)]].map(([l, v]) => h('div', { class: 'stat' }, h('div', { class: 'stat-label', text: l }), h('div', { class: 'stat-value', text: v })))));
     const t = h('table', { class: 'hist-table' });
-    t.append(h('tr', {}, ...['Дата', 'Вопросов', 'Верно', 'Оценка', 'Время', ''].map(x => h('th', { text: x }))));
+    t.append(h('tr', {}, ...['Date', 'Questions', 'Correct', 'Grade', 'Time', ''].map(x => h('th', { text: x }))));
     ex.forEach(e => t.append(h('tr', {},
-      h('td', { text: new Date(e.date).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }) }), h('td', { text: e.total }),
+      h('td', { text: new Date(e.date).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }) }), h('td', { text: e.total }),
       h('td', { text: OS.pct(e.score) }), h('td', { html: `<b style="color:${e.grade >= 18 ? 'var(--ok)' : 'var(--bad)'}">${e.grade}/30</b>` }),
-      h('td', { text: fmtDur(e.duration) }), h('td', {}, h('a', { href: '#/exam/result/' + e.id, text: 'разбор →' })))));
+      h('td', { text: fmtDur(e.duration) }), h('td', {}, h('a', { href: '#/exam/result/' + e.id, text: 'review →' })))));
     page.append(h('div', { class: 'card', style: { overflowX: 'auto' } }, t));
   };
 })();
