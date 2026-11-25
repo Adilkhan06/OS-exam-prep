@@ -1,6 +1,6 @@
 OS.addModule({
   id: 'devices',
-  num: 13,
+  num: 15,
   group: 'lab',
   title: 'Device Management in Linux',
   titleRu: 'Управление устройствами в Linux',

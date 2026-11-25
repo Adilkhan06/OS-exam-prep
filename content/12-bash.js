@@ -1,6 +1,6 @@
 OS.addModule({
   id: 'bash',
-  num: 12,
+  num: 14,
   group: 'lab',
   title: 'Bash Scripting',
   titleRu: 'Скрипты на Bash',

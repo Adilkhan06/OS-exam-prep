@@ -1,6 +1,6 @@
 OS.addModule({
   id: 'linux-proc',
-  num: 11,
+  num: 13,
   group: 'lab',
   title: 'Linux Processes',
   titleRu: 'Процессы в Linux (лаба)',

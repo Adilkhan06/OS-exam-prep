@@ -1,13 +1,13 @@
 OS.addModule({
   id: 'io',
-  num: 8,
+  num: 10,
   group: 'theory',
   title: 'I/O Systems',
   titleRu: 'Системы ввода-вывода',
   icon: '🔌',
   sources: ['11-IO.pdf'],
   summary: 'How the CPU talks to slow and very different devices: buses and controllers, the four I/O techniques (program controlled, polling, interrupt driven, DMA), the interrupt mechanism in detail, device drivers, buffering vs caching and user-space I/O.',
-  bridge: 'In the Scheduling and Deadlock modules a device was an abstract resource: a process "waits for I/O" or "requests the printer". Module 1 showed the hardware outline (interrupts, DMA). This module opens the box: how the CPU actually gives a command to a device, how it learns that the device has finished, and how the OS hides the huge differences between devices.',
+  bridge: 'The Main Memory and Intel i7 modules followed data between the CPU, the caches and RAM. But data also has to enter and leave the machine. In the Scheduling and Deadlock modules a device was an abstract resource: a process "waits for I/O" or "requests the printer". Module 1 showed the hardware outline (interrupts, DMA). This module opens the box: how the CPU actually gives a command to a device, how it learns that the device has finished, and how the OS hides the huge differences between devices.',
   intro: `
 <p>A CPU executes billions of instructions per second, and every instruction looks the same to it. Devices are the opposite: a keyboard produces a few bytes per second, a graphics card thousands of megabits; a disk stores data, a printer only outputs it. The <b>I/O system</b> is the part of the hardware and of the OS that connects these two worlds. It has two jobs: <b>move data</b> between devices and memory without wasting the CPU, and <b>hide the differences</b> between devices from programs.</p>
 <p>Keep one picture in mind: <b>CPU ↔ bus ↔ controller ↔ device</b>. The CPU never touches a device directly; it writes commands into the registers of the device controller. The module first builds this picture (devices, buses, controllers). Then it climbs a ladder of four techniques — program controlled I/O, polling, interrupts, DMA — where each step frees more CPU time than the one before. Next it looks closely at <b>interrupts</b>, the mechanism behind the last two steps. Finally it moves up to software: device drivers, buffering and the I/O code that runs in user space.</p>`,

@@ -142,7 +142,7 @@
       h('div', { class: 'hero-main' },
         h('h1', { text: 'Operating Systems' }),
         h('p', { class: 'tr-zone', html: `Every topic of the course, explained step by step: why each mechanism exists, how it works, and how it leads to the next one. ${OS.modules.length} modules, ${totalQ} questions, interactive simulators. Learn, practise, then take a timed exam.` }),
-        h('div', { class: 'row' }, cont, h('a', { class: 'btn lg', href: '#/exam', text: 'Exam mode' })),
+        h('div', { class: 'row' }, cont, h('a', { class: 'btn lg', href: '#/oral', text: 'Oral prep' }), h('a', { class: 'btn lg', href: '#/exam', text: 'Exam mode' })),
         h('div', { class: 'small muted', html: 'Tip: turn on <b>translation mode</b> (the <span class="kbd">EN→RU</span> button or the <span class="kbd">T</span> key) and click any word to see its Russian translation.' })),
       h('div', { class: 'stats' },
         stat('Sections studied', `${readSecs}/${totalSecs}`, totalSecs ? OS.pct(readSecs / totalSecs) : '—'),

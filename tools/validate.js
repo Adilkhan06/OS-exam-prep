@@ -8,16 +8,17 @@ const vm = require('vm');
 const ROOT = path.join(__dirname, '..');
 const VIZ = ['flow', 'layers', 'graph', 'timeline', 'stepper', 'tree', 'scheduler', 'mlfq', 'procStates', 'forkTree',
   'threadModels', 'amdahl', 'race', 'peterson', 'semaphore', 'philosophers', 'banker', 'diskSched', 'hddCalc', 'raid',
-  'chmod', 'ioModes'];
+  'chmod', 'ioModes', 'paging', 'memAlloc', 'bitSplit'];
 const TYPES = ['single', 'multi', 'tf', 'code'];
 
 let files = process.argv.slice(2);
 if (!files.length) {
-  files = fs.readdirSync(path.join(ROOT, 'content')).filter(f => f.endsWith('.js')).sort().map(f => path.join('content', f));
+  files = fs.readdirSync(path.join(ROOT, 'content')).filter(f => /^[0-9].*[.]js$/.test(f)).sort().map(f => path.join('content', f));
 }
 
 const modules = [];
-const sandbox = { OS: { addModule: m => modules.push(m) }, console };
+const orals = [];
+const sandbox = { OS: { addModule: m => modules.push(m), addOral: (module, items) => orals.push({ module, items }), oral: {} }, console };
 vm.createContext(sandbox);
 
 const errors = [];
@@ -112,6 +113,13 @@ for (const m of modules) {
   console.log(`${m.__file.padEnd(28)} ${String(m.id).padEnd(12)} sections=${String(secIds.size).padStart(2)} terms=${String((m.terms || []).length).padStart(3)} questions=${String(nq).padStart(3)} answer-pos=${JSON.stringify(pos)}${uncovered.length ? '  no-questions: ' + uncovered.join(',') : ''}`);
 }
 
+// oral prep files
+if (!process.argv.slice(2).length) {
+  fs.readdirSync(path.join(ROOT, 'content')).filter(f => /^oral.*[.]js$/.test(f)).forEach(f => vm.runInContext(fs.readFileSync(path.join(ROOT, 'content', f), 'utf8'), sandbox, { filename: f }));
+  let n = 0;
+  orals.forEach(g => { const m = modules.find(x => x.id === g.module); if (!m) return err('oral', 'unknown module ' + g.module); g.items.forEach((it, i) => { n++; if (!it.q || !it.a) err('oral ' + g.module + '#' + i, 'missing q/a'); if (![1, 2, 3].includes(it.stars)) err('oral ' + g.module + '#' + i, 'stars 1-3'); if (it.sec && !m.sections.some(s => s.id === it.sec)) warn('oral ' + g.module + '#' + i, 'section ' + it.sec + ' not found'); }); });
+  console.log('oral items: ' + n);
+}
 warns.forEach(w => console.log('WARN  ' + w));
 errors.forEach(e => console.log('ERROR ' + e));
 console.log(`\n${modules.length} module(s), ${qids.size} questions, ${errors.length} error(s), ${warns.length} warning(s)`);

@@ -1,6 +1,6 @@
 OS.addModule({
   id: 'storage',
-  num: 9,
+  num: 11,
   group: 'theory',
   title: 'Mass-Storage Systems',
   titleRu: 'Системы внешней памяти',

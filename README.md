@@ -14,6 +14,7 @@ works and *what follows from it* — with interactive visualizations, practice q
   phrases such as *race condition* or *context switch* are translated as a whole. Works offline.
 - **Simulators**: CPU scheduling (FCFS/SJF/SRTF/RR/Priority), disk scheduling, Banker's algorithm, race condition,
   Peterson, semaphores, dining philosophers, fork tree, Amdahl's law, RAID with XOR parity, chmod and more.
+- **Oral prep** tab: the shortest complete answers to the most likely oral questions, ranked ★★★/★★/★ with the reasoning (written-quiz topics, slide emphasis, recency), self-test mode and a "ready" checklist.
 - **Practice** per module or section with instant feedback, **flashcards**, **search**, **mistakes bank**.
 - **Exam**: choose topics, number and type of questions (theory / code), timer, flags, result in % and on the /30
   scale, review, retake mistakes, history. Progress is stored in the browser (`localStorage`).
@@ -36,6 +37,8 @@ js/core.js             router, storage, code highlighting
 js/viz/*.js            visualizations and simulators
 js/learn.js            home (course map), modules, practice, flashcards, search, mistakes
 js/exam.js             exam mode and history
+js/oral.js             oral-prep tab
+content/oral-*.js      oral-prep questions and short answers
 js/translate.js        click-a-word translation mode
 js/dict.js             EN→RU dictionary (generated from the site vocabulary)
 content/NN-*.js        module content (OS.addModule)

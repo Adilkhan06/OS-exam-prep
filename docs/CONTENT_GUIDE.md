@@ -115,3 +115,12 @@ Template literals (backticks); inside them never use backticks or `${` (write `&
 ## Check
 `node tools/validate.js content/NN-<id>.js` must report 0 errors and 0 warnings. The validator flags Cyrillic text
 outside `terms[].ru` / `titleRu`, missing `lead` / `takeaway` / `why` / `bridge` / `intro`, and the usual schema errors.
+
+## Main-memory visualizations (added for module "Main Memory")
+- **`paging`** — logical → physical translation through a page table, plus a TLB / effective-access-time calculator.
+  `{ pageSize: 4, pages: [5, 6, 1, 2], frames: 8, address: 13, tlb: { hit: 0.8, mem: 10 } }` (`tlb: false` hides the EAT part).
+  `pages[i]` = frame that holds page i. Shows p = ⌊a / size⌋, d = a mod size, the binary p|d split when the page size is a power of 2, and f × size + d.
+- **`memAlloc`** — first-fit / best-fit / worst-fit for a list of holes and requests (tabs to switch the strategy).
+  `{ holes: [100, 500, 200, 300, 600], requests: [212, 417, 112, 426], strategy: 'first' }` (KB). Requests are served in order; a request that fits nowhere "must wait" (external fragmentation).
+- **`bitSplit`** — how an address is divided into fields (page number / offset, two-level paging, IA-32 segmentation…).
+  `{ fields: [{ label: 'p1', bits: 10 }, { label: 'p2', bits: 10 }, { label: 'd', bits: 12 }], address: '0x00403004', note: 'optional text' }` (max 32 bits).

@@ -1,6 +1,6 @@
 OS.addModule({
   id: 'linux',
-  num: 10,
+  num: 12,
   group: 'lab',
   title: 'Linux OS — basics',
   titleRu: 'Основы Linux',
@@ -237,7 +237,9 @@ aa_sequence.pl  ACTG.pl  hello_world.pl</pre>`,
   <tr><td><code>mv</code></td><td>rename a file</td><td><code>mv output.txt input.txt</code></td></tr>
   <tr><td><code>rm</code></td><td>remove a file</td><td><code>rm data2.dat</code></td></tr>
   <tr><td><code>rm -r</code></td><td>remove <b>recursively</b>: all files and directories inside, then the directory itself</td><td><code>rm -r new_directory</code></td></tr>
+  <tr><td><code>cp -r</code></td><td>copy a <b>directory</b> with everything inside it (recursively) — plain <code>cp</code> refuses to copy a directory</td><td><code>cp -r progetto backup_progetto</code> (asked in the written quiz)</td></tr>
 </table>
+<div class="callout key">The option <b>-r</b> means "recursive" for both <code>rm</code> and <code>cp</code>: descend into the directory and handle every file and subdirectory. <code>mv</code> needs no <code>-r</code>: moving a directory only changes its path. There is no <code>mv -r</code>.</div>
 <p>Two details explain most surprises:</p>
 <ul>
   <li><b>mv does two jobs.</b> For the file system, moving and renaming are the same operation: both change the path under which the file is found. So <code>mv data2.dat ./new_directory/</code> moves the file (the target is a directory), and <code>mv output.txt input.txt</code> renames it (the target is a new name).</li>
@@ -721,6 +723,7 @@ $ chmod 754 myfile              # numeric: 7 = rwx, 5 = r-x, 4 = r--</pre>
     { id: 'lin-36', type: 'single', q: 'Final exercise: user — all permissions, group — read and execute, others — read only. How do you do it numerically?', options: ['chmod 751 file', 'chmod 754 file', 'chmod 764 file', 'chmod 745 file'], answer: 1, explain: 'rwx = 7, r-x = 5, r-- = 4 → 754 (symbolic: chmod u=rwx,g=rx,o=r file).', section: 'dirperms', diff: 2 },
     { id: 'lin-37', type: 'single', q: 'Which command is equivalent to ls -l -h?', options: ['ls -lh', 'ls -l-h', 'ls --lh', 'ls -L -H'], answer: 0, explain: 'Short options can be combined behind one dash: -l -h = -lh. Long options use two dashes and a whole word (--human-readable), and options are case sensitive, so -L and -H are different options.', section: 'connect', diff: 1 },
     { id: 'lin-38', type: 'multi', q: 'Before a program starts, what does the kernel check? (select all that apply)', options: ['Whether the program file is accessible to the user or group of the process that wants to run it', 'Whether the file permits execution by that user or group (or by anybody)', 'Whether the program was compiled by root', 'Whether the file is stored in /bin'], answer: [0, 1], explain: 'The slide lists exactly two checks: access to the file and execute permission for the user/group. Who compiled the program or where it is stored does not matter.', section: 'exec', diff: 1 },
-    { id: 'lin-39', type: 'code', lang: 'bash', q: 'n.txt has 20 lines. What does the command print?', code: 'wc -l < n.txt', options: ['20', '20 n.txt', 'n.txt', 'Nothing: wc needs a file name'], answer: 0, explain: 'With < the shell opens n.txt and connects it to the standard input of wc. wc just reads stdin and never learns the file name, so it prints only the count. wc -l n.txt would print "20 n.txt".', section: 'redirect', diff: 2 }
+    { id: 'lin-39', type: 'code', lang: 'bash', q: 'n.txt has 20 lines. What does the command print?', code: 'wc -l < n.txt', options: ['20', '20 n.txt', 'n.txt', 'Nothing: wc needs a file name'], answer: 0, explain: 'With < the shell opens n.txt and connects it to the standard input of wc. wc just reads stdin and never learns the file name, so it prints only the count. wc -l n.txt would print "20 n.txt".', section: 'redirect', diff: 2 },
+    {id: "lin-40",type: "single",q: "Which command copies the directory progetto and all of its contents (recursively) into a new directory backup_progetto?",options: ["cp -r progetto backup_progetto","cp progetto backup_progetto","mv -r progetto backup_progetto","rm -r progetto backup_progetto"],answer: 0,explain: "-r means recursive: cp descends into the directory and copies everything. Plain cp refuses to copy a directory; mv has no -r option and would move, not copy.",section: "files",diff: 1}
   ]
 });
