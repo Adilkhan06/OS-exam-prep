@@ -5,8 +5,9 @@ Every topic of the lectures and labs is explained step by step in English — *w
 works and *what follows from it* — with interactive visualizations, practice questions and a timed exam mode.
 
 ## Features
-- **13 modules** forming one logical chain: OS basics → OS services & structure → processes → threads → CPU
-  scheduling → synchronization → deadlock → I/O systems → mass storage, plus labs: Linux basics, Linux processes,
+- **15 modules** forming one logical chain: OS basics → OS services & structure → processes → threads → CPU
+  scheduling → synchronization → deadlock → main memory → case study: Intel Core i7 memory hierarchy → I/O systems →
+  mass storage, plus labs: Linux basics, Linux processes,
   Bash scripting, device management.
 - Each module starts with the big picture and how it follows from the previous one, then a roadmap; each section has
   a **Why this matters** lead, the explanation, and a **Key idea** takeaway.
